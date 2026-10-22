@@ -1,72 +1,100 @@
-import { Brain, FileText, Gauge, BookOpen, Bot } from 'lucide-react';
+import { BrainCircuit, FileText, SlidersHorizontal, Network, Bot } from 'lucide-react';
 import { type LucideIcon } from 'lucide-react';
 
-export interface AppData {
+export interface EcosystemApp {
   id: string;
-  name: string;
+  title: string;
   tagline: string;
   description: string;
-  icon: LucideIcon;
-  color: string;
-  gradient: string;
-  features: string[];
+  category: string;
+  Icon: LucideIcon;
+  colSpan: string;
+  rowSpan?: string;
+  badge?: string;
+  metric?: {
+    label: string;
+    value: string;
+  };
+  accentColor: string;
+  accentGlow: string;
+  href: string;
   status: 'live' | 'beta' | 'coming-soon';
 }
 
-export const apps: AppData[] = [
+export const ECOSYSTEM_APPS: EcosystemApp[] = [
   {
-    id: 'memory',
-    name: 'AI Memory',
-    tagline: 'Persistent Context Engine',
-    description: 'Long-term memory system that gives AI agents the ability to remember, recall, and reason across sessions with vector-powered retrieval.',
-    icon: Brain,
-    color: '#5c7cfa',
-    gradient: 'from-blue-500/20 to-indigo-600/20',
-    features: ['Vector embeddings', 'Semantic search', 'Session persistence', 'Memory decay'],
+    id: 'ai-memory',
+    title: 'AI Memory Nexus',
+    tagline: 'Infinite Vector Storage & Retrieval',
+    description: 'A persistent neural memory layer that gives your AI models long-term context, semantic search, and dynamic knowledge recall.',
+    category: 'Infrastructure',
+    Icon: BrainCircuit,
+    colSpan: 'md:col-span-2 lg:col-span-2',
+    rowSpan: 'md:row-span-2',
+    badge: 'Core Engine',
+    metric: { label: 'Vector Index Speed', value: '< 12ms' },
+    accentColor: 'from-purple-500/20 via-indigo-500/10 to-transparent',
+    accentGlow: '#8b5cf6',
+    href: '#sandbox',
     status: 'live',
   },
   {
-    id: 'notepad',
-    name: 'Smart Notepad',
-    tagline: 'AI-Augmented Writing',
-    description: 'An intelligent writing environment with real-time AI assistance, auto-formatting, and context-aware suggestions that adapts to your style.',
-    icon: FileText,
-    color: '#9775fa',
-    gradient: 'from-violet-500/20 to-purple-600/20',
-    features: ['AI completion', 'Smart formatting', 'Context suggestions', 'Markdown support'],
+    id: 'notepad-editor',
+    title: 'Smart Notepad Editor',
+    tagline: 'Markdown meets Autonomous AI',
+    description: 'A lightning-fast scratchpad with inline ghost-text completion, block refactoring, and instant local-first persistence.',
+    category: 'Productivity',
+    Icon: FileText,
+    colSpan: 'md:col-span-1 lg:col-span-1',
+    badge: 'Popular',
+    metric: { label: 'Typing Latency', value: '0ms' },
+    accentColor: 'from-blue-500/20 via-cyan-500/10 to-transparent',
+    accentGlow: '#3b82f6',
+    href: '#sandbox',
     status: 'live',
   },
   {
     id: 'prompt-eval',
-    name: 'Prompt Evaluator',
-    tagline: 'Precision Prompt Engineering',
-    description: 'Benchmark, score, and optimize your prompts with automated evaluation metrics, A/B testing, and performance analytics.',
-    icon: Gauge,
-    color: '#f783ac',
-    gradient: 'from-pink-500/20 to-rose-600/20',
-    features: ['Quality scoring', 'A/B testing', 'Token analytics', 'Version control'],
+    title: 'Prompt & Eval Studio',
+    tagline: 'A/B Testing for LLM Prompts',
+    description: 'Systematically benchmark prompts across multiple models, track token usage, cost efficiency, and output quality matrices.',
+    category: 'Developer Tool',
+    Icon: SlidersHorizontal,
+    colSpan: 'md:col-span-1 lg:col-span-1',
+    metric: { label: 'Model Benchmarks', value: '14+ LLMs' },
+    accentColor: 'from-emerald-500/20 via-teal-500/10 to-transparent',
+    accentGlow: '#10b981',
+    href: '#sandbox',
     status: 'beta',
   },
   {
-    id: 'wiki',
-    name: 'LLM Wiki',
-    tagline: 'Living Knowledge Base',
-    description: 'A self-evolving wiki powered by language models that generates, cross-references, and maintains documentation automatically.',
-    icon: BookOpen,
-    color: '#20c997',
-    gradient: 'from-emerald-500/20 to-teal-600/20',
-    features: ['Auto-generation', 'Cross-linking', 'Version history', 'Collaborative editing'],
+    id: 'llm-wiki',
+    title: 'LLM Knowledge Wiki',
+    tagline: 'Self-Updating Graph Documentation',
+    description: 'An interactive, node-linked documentation ecosystem automatically synthesized and maintained by background LLM crawlers.',
+    category: 'Knowledge Base',
+    Icon: Network,
+    colSpan: 'md:col-span-2 lg:col-span-1',
+    badge: 'Autonomous',
+    metric: { label: 'Node Connectivity', value: '99.8%' },
+    accentColor: 'from-amber-500/20 via-orange-500/10 to-transparent',
+    accentGlow: '#f59e0b',
+    href: '#sandbox',
     status: 'beta',
   },
   {
-    id: 'agent',
-    name: 'AI Agent Suite',
-    tagline: 'Autonomous Task Orchestration',
-    description: 'Deploy multi-agent pipelines that plan, execute, and iterate on complex tasks with real-time monitoring and human-in-the-loop controls.',
-    icon: Bot,
-    color: '#fab005',
-    gradient: 'from-amber-500/20 to-orange-600/20',
-    features: ['Multi-agent pipelines', 'Tool integration', 'Real-time monitoring', 'HITL controls'],
+    id: 'ai-agent-suite',
+    title: 'Autonomous Agent Suite',
+    tagline: 'Multi-Agent Workflow Orchestration',
+    description: 'Deploy collaborative AI worker nodes that plan, execute code, verify outputs, and execute complex multi-step web workflows.',
+    category: 'Automation',
+    Icon: Bot,
+    colSpan: 'md:col-span-3 lg:col-span-2',
+    badge: 'Advanced',
+    metric: { label: 'Execution Success', value: '94.2%' },
+    accentColor: 'from-rose-500/20 via-pink-500/10 to-transparent',
+    accentGlow: '#f43f5e',
+    href: '#sandbox',
     status: 'coming-soon',
   },
 ];

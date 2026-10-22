@@ -26,19 +26,19 @@ export default function Navbar() {
         animate={{ y: 0 }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-          scrolled ? 'glass-strong py-3' : 'py-5'
+          scrolled ? 'bg-zinc-950/80 backdrop-blur-xl border-b border-zinc-800/50 py-3' : 'py-5'
         }`}
       >
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
           {/* Logo */}
           <a href="#" className="flex items-center gap-2 group">
             <div className="relative">
-              <Sparkles className="w-6 h-6 text-nexus-400 group-hover:text-nexus-300 transition-colors" />
-              <div className="absolute inset-0 bg-nexus-500/30 rounded-full blur-lg opacity-0 group-hover:opacity-100 transition-opacity" />
+              <Sparkles className="w-6 h-6 text-purple-400 group-hover:text-purple-300 transition-colors" />
+              <div className="absolute inset-0 bg-purple-500/30 rounded-full blur-lg opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
             <span className="text-lg font-bold tracking-tight">
               <span className="text-white">Nexus</span>
-              <span className="text-nexus-400">AI</span>
+              <span className="text-purple-400">AI</span>
             </span>
           </a>
 
@@ -48,10 +48,10 @@ export default function Navbar() {
               <a
                 key={link.label}
                 href={link.href}
-                className="text-sm text-white/60 hover:text-white transition-colors duration-300 relative group"
+                className="text-sm text-zinc-400 hover:text-white transition-colors duration-300 relative group"
               >
                 {link.label}
-                <span className="absolute -bottom-1 left-0 w-0 h-px bg-nexus-400 group-hover:w-full transition-all duration-300" />
+                <span className="absolute -bottom-1 left-0 w-0 h-px bg-purple-400 group-hover:w-full transition-all duration-300" />
               </a>
             ))}
           </div>
@@ -60,13 +60,13 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-4">
             <a
               href="#ecosystem"
-              className="px-4 py-2 text-sm font-medium text-white/80 hover:text-white transition-colors"
+              className="px-4 py-2 text-sm font-medium text-zinc-300 hover:text-white transition-colors"
             >
               Sign In
             </a>
             <a
               href="#sandbox"
-              className="px-5 py-2.5 text-sm font-medium rounded-full bg-nexus-600/80 hover:bg-nexus-500/80 text-white transition-all duration-300 hover:shadow-lg hover:shadow-nexus-500/20"
+              className="px-5 py-2.5 text-sm font-medium rounded-xl bg-purple-600/80 hover:bg-purple-500/80 text-white transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/20"
             >
               Get Early Access
             </a>
@@ -75,7 +75,7 @@ export default function Navbar() {
           {/* Mobile Toggle */}
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="md:hidden text-white/80 hover:text-white"
+            className="md:hidden text-zinc-300 hover:text-white"
           >
             {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
@@ -89,7 +89,7 @@ export default function Navbar() {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="fixed inset-0 z-40 bg-black/95 backdrop-blur-xl pt-24 px-6 md:hidden"
+            className="fixed inset-0 z-40 bg-zinc-950/95 backdrop-blur-xl pt-24 px-6 md:hidden"
           >
             <div className="flex flex-col gap-6">
               {navLinks.map((link) => (
@@ -97,14 +97,14 @@ export default function Navbar() {
                   key={link.label}
                   href={link.href}
                   onClick={() => setMobileOpen(false)}
-                  className="text-2xl font-light text-white/80 hover:text-white transition-colors"
+                  className="text-2xl font-light text-zinc-300 hover:text-white transition-colors"
                 >
                   {link.label}
                 </a>
               ))}
               <a
                 href="#sandbox"
-                className="mt-4 px-6 py-3 text-center font-medium rounded-full bg-nexus-600/80 text-white"
+                className="mt-4 px-6 py-3 text-center font-medium rounded-xl bg-purple-600/80 text-white"
               >
                 Get Early Access
               </a>

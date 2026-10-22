@@ -1,89 +1,86 @@
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowDown, Sparkles, Code2, Zap } from 'lucide-react';
 import Navbar from './components/Navbar';
 import BentoGrid from './components/BentoGrid';
 import CinematicScroll from './components/CinematicScroll';
 import SandboxSection from './components/SandboxSection';
+import SandboxModal from './components/SandboxModal';
 import Footer from './components/Footer';
 
-// Lazy load the 3D canvas for performance
 const HeroCanvas = lazy(() => import('./components/HeroCanvas'));
 
 function HeroSection() {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background layers */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black via-nexus-950/20 to-black" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black via-zinc-950 to-black" />
       <div className="absolute inset-0 grid-pattern opacity-50" />
-      
-      {/* Radial gradient overlay */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(92,124,250,0.08)_0%,transparent_70%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(139,92,246,0.08)_0%,transparent_70%)]" />
       
       {/* 3D Canvas */}
       <Suspense fallback={null}>
         <HeroCanvas />
       </Suspense>
 
+      {/* Radial overlay for readability */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(9,9,11,0.6)_70%)] pointer-events-none" />
+
       {/* Hero Content */}
-      <div className="relative z-10 max-w-5xl mx-auto px-6 text-center">
-        {/* Badge */}
+      <div className="relative z-10 max-w-5xl mx-auto px-4 md:px-8 text-center pointer-events-none">
+        {/* Announcement Pill */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass mb-8"
+          transition={{ duration: 0.6 }}
+          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-zinc-900/80 border border-zinc-800 backdrop-blur-md pointer-events-auto shadow-2xl mb-8"
         >
-          <Sparkles className="w-3.5 h-3.5 text-nexus-400" />
-          <span className="text-xs font-medium text-white/60">Introducing the NexusAI Ecosystem</span>
-          <span className="px-2 py-0.5 text-[10px] font-medium rounded-full bg-nexus-500/20 text-nexus-400 border border-nexus-500/30">
-            v2.0
+          <Sparkles className="w-4 h-4 text-purple-400 animate-pulse" />
+          <span className="text-xs md:text-sm font-medium text-zinc-300">
+            Next-Gen AI Application Ecosystem
           </span>
         </motion.div>
 
-        {/* Main heading */}
+        {/* Main Headline */}
         <motion.h1
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
-          className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight mb-6"
+          transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+          className="text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-tight text-white leading-[1.1] mb-6"
         >
-          <span className="text-white">Engineering the</span>
-          <br />
-          <span className="gradient-text">AI Stack</span>
-          <span className="text-white"> for the</span>
-          <br />
-          <span className="text-white">Next Generation</span>
+          Engineering the <br />
+          <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-indigo-300 to-cyan-400">
+            AI-Augmented Stack
+          </span>
         </motion.h1>
 
         {/* Subtitle */}
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.6 }}
-          className="text-lg md:text-xl text-white/40 max-w-2xl mx-auto mb-10 leading-relaxed"
+          transition={{ duration: 0.8, delay: 0.4 }}
+          className="text-base md:text-xl text-zinc-400 max-w-2xl mx-auto mb-10 leading-relaxed"
         >
-          Five powerful AI tools — memory, writing, evaluation, knowledge, and automation — 
-          unified under one roof. Build smarter, faster, together.
+          A unified portfolio of autonomous agents, infinite memory graphs, prompt evaluators, and smart editors built for developers.
         </motion.p>
 
         {/* CTAs */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.8 }}
-          className="flex flex-col sm:flex-row items-center justify-center gap-4"
+          transition={{ duration: 0.8, delay: 0.6 }}
+          className="flex flex-col sm:flex-row items-center justify-center gap-4 pointer-events-auto"
         >
           <a
             href="#ecosystem"
-            className="group relative px-8 py-4 rounded-full bg-nexus-600/80 hover:bg-nexus-500/80 text-white font-medium transition-all duration-300 hover:shadow-xl hover:shadow-nexus-500/20 flex items-center gap-2"
+            className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-purple-600 hover:bg-purple-500 text-white font-semibold text-sm transition-all shadow-lg shadow-purple-600/25 flex items-center justify-center gap-2 group"
           >
             <Zap className="w-4 h-4" />
             Explore Ecosystem
           </a>
           <a
             href="#sandbox"
-            className="group px-8 py-4 rounded-full glass hover:bg-white/[0.06] text-white/80 hover:text-white font-medium transition-all duration-300 flex items-center gap-2"
+            className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-800 text-zinc-200 font-semibold text-sm backdrop-blur-md transition-all flex items-center justify-center gap-2"
           >
             <Code2 className="w-4 h-4" />
             Try Live Demos
@@ -100,12 +97,12 @@ function HeroSection() {
           {[
             { value: '5', label: 'AI Tools' },
             { value: '99.9%', label: 'Uptime' },
-            { value: '<100ms', label: 'Latency' },
+            { value: '<12ms', label: 'Latency' },
             { value: '10K+', label: 'Developers' },
           ].map((stat) => (
             <div key={stat.label} className="text-center">
               <div className="text-xl md:text-2xl font-bold text-white">{stat.value}</div>
-              <div className="text-xs text-white/30 mt-1">{stat.label}</div>
+              <div className="text-xs text-zinc-500 mt-1">{stat.label}</div>
             </div>
           ))}
         </motion.div>
@@ -123,15 +120,14 @@ function HeroSection() {
           transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
           className="flex flex-col items-center gap-2"
         >
-          <span className="text-[10px] text-white/20 uppercase tracking-wider">Scroll</span>
-          <ArrowDown className="w-4 h-4 text-white/20" />
+          <span className="text-[10px] text-zinc-500 uppercase tracking-wider">Scroll</span>
+          <ArrowDown className="w-4 h-4 text-zinc-500" />
         </motion.div>
       </motion.div>
     </section>
   );
 }
 
-// Metrics/tech stack section
 function TechStackSection() {
   const technologies = [
     { name: 'React', category: 'Frontend' },
@@ -147,7 +143,7 @@ function TechStackSection() {
   ];
 
   return (
-    <section className="relative py-20 border-t border-white/[0.04]">
+    <section className="relative py-20 border-t border-zinc-800/40">
       <div className="max-w-7xl mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -155,7 +151,7 @@ function TechStackSection() {
           viewport={{ once: true }}
           className="text-center mb-12"
         >
-          <p className="text-sm text-white/30 uppercase tracking-wider mb-2">Built With</p>
+          <p className="text-xs text-zinc-500 uppercase tracking-wider mb-2">Built With</p>
           <h3 className="text-2xl font-bold text-white">Modern Stack. Maximum Performance.</h3>
         </motion.div>
         
@@ -168,10 +164,10 @@ function TechStackSection() {
               viewport={{ once: true }}
               transition={{ delay: index * 0.05 }}
               whileHover={{ scale: 1.05, y: -2 }}
-              className="px-4 py-2.5 rounded-xl glass text-sm text-white/50 hover:text-white/80 transition-colors cursor-default"
+              className="px-4 py-2.5 rounded-xl bg-zinc-900/40 border border-zinc-800/60 text-sm text-zinc-400 hover:text-zinc-200 transition-colors cursor-default backdrop-blur-sm"
             >
               <span className="font-medium">{tech.name}</span>
-              <span className="text-white/20 ml-2 text-xs">{tech.category}</span>
+              <span className="text-zinc-600 ml-2 text-xs">{tech.category}</span>
             </motion.div>
           ))}
         </div>
@@ -181,15 +177,23 @@ function TechStackSection() {
 }
 
 export default function App() {
+  const [isSandboxOpen, setIsSandboxOpen] = useState(false);
+
   return (
-    <div className="relative min-h-screen bg-black noise-overlay">
+    <div className="relative min-h-screen bg-zinc-950 text-zinc-100">
       <Navbar />
       <HeroSection />
       <BentoGrid />
       <TechStackSection />
       <CinematicScroll />
-      <SandboxSection />
+      <SandboxSection onOpenSandbox={() => setIsSandboxOpen(true)} />
       <Footer />
+      
+      {/* Sandbox Modal */}
+      <SandboxModal
+        isOpen={isSandboxOpen}
+        onClose={() => setIsSandboxOpen(false)}
+      />
     </div>
   );
 }
