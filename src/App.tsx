@@ -1,4 +1,4 @@
-import { Suspense, lazy, useState } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowDown, Sparkles, Code2, Zap } from 'lucide-react';
 import Navbar from './components/Navbar';
@@ -7,8 +7,7 @@ import CinematicScroll from './components/CinematicScroll';
 import SandboxSection from './components/SandboxSection';
 import SandboxModal from './components/SandboxModal';
 import Footer from './components/Footer';
-
-const HeroCanvas = lazy(() => import('./components/HeroCanvas'));
+import CursorRingField from './components/CursorRingField';
 
 function HeroSection() {
   return (
@@ -18,13 +17,27 @@ function HeroSection() {
       <div className="absolute inset-0 grid-pattern opacity-50" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(139,92,246,0.08)_0%,transparent_70%)]" />
       
-      {/* 3D Canvas */}
-      <Suspense fallback={null}>
-        <HeroCanvas />
-      </Suspense>
+      {/* Cursor Ring Field - Interactive particle effect */}
+      <CursorRingField
+        background="transparent"
+        colors={{
+          items: ["#8b5cf6", "#6366f1", "#3b82f6", "#06b6d4"],
+        }}
+        density={250}
+        dotSize={140}
+        speed={8}
+        cameraDistance={180}
+        ring={{
+          push: 60,
+          width: 10,
+          radius: 14,
+          turbulence: 120,
+        }}
+        style={{ position: "absolute", inset: 0 }}
+      />
 
-      {/* Radial overlay for readability */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(9,9,11,0.6)_70%)] pointer-events-none" />
+      {/* Radial overlay for text readability over particles */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(9,9,11,0.3)_0%,rgba(9,9,11,0.7)_60%,rgba(9,9,11,0.95)_100%)] pointer-events-none" />
 
       {/* Hero Content */}
       <div className="relative z-10 max-w-5xl mx-auto px-4 md:px-8 text-center pointer-events-none">
