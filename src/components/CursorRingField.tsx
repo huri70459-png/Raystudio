@@ -1,3 +1,5 @@
+// Cursor Ring Field — Originkit
+
 "use client"
 
 import * as React from "react"
@@ -78,6 +80,10 @@ void fieldTerms(
     out vec2 disp, out float bandT, out float bandHot
 ){
     float dist = distance(ref, ringPos);
+
+    // Break the ring's own edge with a slow noise so it never reads as a
+    // mathematically clean circle. Only the OUTER smoothstep uses the wobbled
+    // distance — wobbling both would just translate the band.
     float n0 = snoise(vec3(ref * 0.2 + vec2(18.4924, 72.9744), time * 0.5));
     float dist1 = distance(ref + (n0 * 0.005), ringPos);
 
@@ -85,18 +91,23 @@ void fieldTerms(
              - smoothstep(ringRadius, ringRadius + w1, dist1);
     float t2 = smoothstep(ringRadius - (w2 * 2.0), ringRadius, dist)
              - smoothstep(ringRadius, ringRadius + w2, dist1);
-    float t3 = smoothstep(ringRadius + w2, ringRadius, dist);
+    float t3 = smoothstep(ringRadius + w2, ringRadius, dist); // solid interior
 
     t  = pow(max(t, 0.0), 2.0);
     t2 = pow(max(t2, 0.0), 3.0);
 
-    t += t2 * 3.0;
-    t += t3 * 0.4;
+    t += t2 * 3.0;                                   // hot core of the band
+    t += t3 * 0.4;                                   // lift everything inside
     t += snoise(vec3(ref * 30.0 + vec2(11.4924, 12.9744), time * 0.5)) * t3 * 0.5;
 
+    // Baseline shimmer, present with no ring anywhere near: this is what keeps
+    // the rest of the field alive instead of black.
     float nS = snoise(vec3(ref * 2.0 + vec2(18.4924, 72.9744), time * 0.5));
     t += pow((nS + 1.5) * 0.5, 2.0) * 0.6;
 
+    // Two octaves of drift plus a standing wave. The wave is scaled by the
+    // distance to the ring so the band itself stays coherent while the far
+    // field ripples.
     float n1 = snoise(vec3(ref * 4.0 + vec2(88.494, 32.4397), time * 0.35));
     float n2 = snoise(vec3(ref * 4.0 + vec2(50.904, 120.947), time * 0.35));
     float n3 = snoise(vec3(ref * 20.0 + vec2(18.4924, 72.9744), time * 0.5));
@@ -274,9 +285,8 @@ void main(){
 }
 `
 
-function compile(gl: WebGLRenderingContext | WebGL2RenderingContext, type: number, src: string) {
+function compile(gl: any, type: number, src: string) {
     const sh = gl.createShader(type)
-    if (!sh) throw new Error("shader creation failed")
     gl.shaderSource(sh, src)
     gl.compileShader(sh)
     if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) {
@@ -287,9 +297,8 @@ function compile(gl: WebGLRenderingContext | WebGL2RenderingContext, type: numbe
     return sh
 }
 
-function program(gl: WebGLRenderingContext | WebGL2RenderingContext, vs: string, fs: string, names: string[]) {
+function program(gl: any, vs: string, fs: string, names: string[]) {
     const prog = gl.createProgram()
-    if (!prog) throw new Error("program creation failed")
     const v = compile(gl, gl.VERTEX_SHADER, vs)
     const f = compile(gl, gl.FRAGMENT_SHADER, fs)
     gl.attachShader(prog, v)
@@ -302,47 +311,50 @@ function program(gl: WebGLRenderingContext | WebGL2RenderingContext, vs: string,
         gl.deleteProgram(prog)
         throw new Error(log || "program link failed")
     }
-    const u: Record<string, WebGLUniformLocation | null> = {}
+    const u: Record<string, any> = {}
+    const nulls: string[] = []
     for (const n of names) {
-        u[n] = gl.getUniformLocation(prog, n)
+        const loc = gl.getUniformLocation(prog, n)
+        if (loc === null) nulls.push(n)
+        u[n] = loc
     }
-    return { prog, u }
+    return { prog, u, nulls }
 }
 
-function makeContext(canvas: HTMLCanvasElement): { gl: WebGL2RenderingContext | WebGLRenderingContext; fmt: { internal: number; format: number; type: number } | null } | null {
+function makeContext(canvas: HTMLCanvasElement) {
     const opts = {
         alpha: true,
         antialias: false,
+
         premultipliedAlpha: false,
         depth: false,
         stencil: false,
         powerPreference: "high-performance" as const,
         preserveDrawingBuffer: true,
     }
-    let gl: WebGL2RenderingContext | WebGLRenderingContext | null = canvas.getContext("webgl2", opts) as WebGL2RenderingContext | null
-    let fmt: { internal: number; format: number; type: number } | null = null
+    let gl: any = canvas.getContext("webgl2", opts)
+    let fmt: any = null
     if (gl) {
-        const gl2 = gl as WebGL2RenderingContext
-        fmt = gl2.getExtension("EXT_color_buffer_float")
-            ? { internal: gl2.RGBA32F, format: gl2.RGBA, type: gl2.FLOAT }
-            : { internal: gl2.RGBA16F, format: gl2.RGBA, type: gl2.HALF_FLOAT }
+        fmt = gl.getExtension("EXT_color_buffer_float")
+            ? { internal: gl.RGBA32F, format: gl.RGBA, type: gl.FLOAT }
+            : { internal: gl.RGBA16F, format: gl.RGBA, type: gl.HALF_FLOAT }
     } else {
-        const gl1 = canvas.getContext("webgl", opts) as WebGLRenderingContext | null
-        if (!gl1) return null
-        gl = gl1
+        gl =
+            canvas.getContext("webgl", opts) ||
+            canvas.getContext("experimental-webgl", opts)
+        if (!gl) return null
         const ok =
-            gl1.getExtension("OES_texture_float") &&
-            gl1.getExtension("WEBGL_color_buffer_float")
-        fmt = ok ? { internal: gl1.RGBA, format: gl1.RGBA, type: gl1.FLOAT } : null
+            gl.getExtension("OES_texture_float") &&
+            gl.getExtension("WEBGL_color_buffer_float")
+        fmt = ok ? { internal: gl.RGBA, format: gl.RGBA, type: gl.FLOAT } : null
     }
 
     if (gl.getParameter(gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS) < 2) fmt = null
     return { gl, fmt }
 }
 
-function stateTexture(gl: WebGLRenderingContext | WebGL2RenderingContext, fmt: { internal: number; format: number; type: number }, size: number, pixels: Float32Array | null) {
+function stateTexture(gl: any, fmt: any, size: number, pixels: any) {
     const tex = gl.createTexture()
-    if (!tex) return null
     gl.bindTexture(gl.TEXTURE_2D, tex)
     gl.texImage2D(
         gl.TEXTURE_2D,
@@ -353,7 +365,7 @@ function stateTexture(gl: WebGLRenderingContext | WebGL2RenderingContext, fmt: {
         0,
         fmt.format,
         fmt.type,
-        pixels
+        pixels || null
     )
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
@@ -363,10 +375,9 @@ function stateTexture(gl: WebGLRenderingContext | WebGL2RenderingContext, fmt: {
     return tex
 }
 
-function renderTarget(gl: WebGLRenderingContext | WebGL2RenderingContext, fmt: { internal: number; format: number; type: number }, size: number) {
+function renderTarget(gl: any, fmt: any, size: number) {
     const tex = stateTexture(gl, fmt, size, null)
     const fbo = gl.createFramebuffer()
-    if (!fbo || !tex) return null
     gl.bindFramebuffer(gl.FRAMEBUFFER, fbo)
     gl.framebufferTexture2D(
         gl.FRAMEBUFFER,
@@ -517,20 +528,21 @@ interface ColorsGroup {
     items?: string[]
     background?: string
     points?: string[]
+
     color1?: string
     color2?: string
     color3?: string
-}
 
+}
 interface RingProps {
     radius?: number
     width?: number
     push?: number
     turbulence?: number
 }
-
 interface CursorRingFieldProps {
     background?: string
+
     colors?: ColorsGroup | string[]
     density?: number
     dotSize?: number
@@ -540,7 +552,7 @@ interface CursorRingFieldProps {
     style?: React.CSSProperties
 }
 
-export default function CursorRingField(props: CursorRingFieldProps) {
+function __OriginkitBase_CursorRingField(props: CursorRingFieldProps) {
     const {
         background: backgroundProp,
         colors,
@@ -553,7 +565,7 @@ export default function CursorRingField(props: CursorRingFieldProps) {
     } = props
 
     const group: ColorsGroup = colors && !Array.isArray(colors) ? colors : {}
-    const background = backgroundProp ?? group.background ?? "transparent"
+    const background = backgroundProp ?? group.background ?? "#04050a"
 
     const clean = (list?: string[]) => (list ?? []).filter((c) => !!c)
     const rawPoints = [
@@ -587,18 +599,8 @@ export default function CursorRingField(props: CursorRingFieldProps) {
         flatColors[i * 3 + 2] = c[2]
     }
 
-    const live = useRef<{
-        colors: Float32Array
-        colorCount: number
-        dotSize: number
-        speed: number
-        camDist: number
-        ringRadius: number
-        ringWidth: number
-        ringEdge: number
-        push: number
-        turb: number
-    }>({
+    const live = useRef<any>({})
+    live.current = {
         colors: flatColors,
         colorCount: swatches.length,
         dotSize: dotSize / 100,
@@ -609,7 +611,7 @@ export default function CursorRingField(props: CursorRingFieldProps) {
         ringEdge: RING_EDGE / 100,
         push: ringPush / 100,
         turb: turbulence / 100,
-    })
+    }
 
     const densityRef = useRef(density)
     const densityDirty = useRef(true)
@@ -628,8 +630,8 @@ export default function CursorRingField(props: CursorRingFieldProps) {
         const { gl, fmt } = ctx
         const useSim = !!fmt
 
-        let simProg: ReturnType<typeof program> | null = null
-        let renderProg: ReturnType<typeof program> | null = null
+        let simProg: any = null
+        let renderProg: any = null
         try {
             if (useSim) {
                 simProg = program(gl, SIM_VERT, SIM_FRAG, [
@@ -649,6 +651,7 @@ export default function CursorRingField(props: CursorRingFieldProps) {
                 "uAspect",
                 "uCamDist",
                 "uPointScale",
+
                 "uColors[0]",
                 "uColorCount",
                 "uRingPos",
@@ -669,12 +672,18 @@ export default function CursorRingField(props: CursorRingFieldProps) {
                 renderNames
             )
         } catch (e) {
+            // eslint-disable-next-line no-console
             console.warn("CursorRingField:", (e as Error).message)
             return
         }
 
+        ;(canvas as any).__probe = {
+            simNulls: simProg ? simProg.nulls : [],
+            renderNulls: renderProg.nulls,
+            useSim,
+        }
+
         const quad = gl.createBuffer()
-        if (!quad) return
         gl.bindBuffer(gl.ARRAY_BUFFER, quad)
         gl.bufferData(
             gl.ARRAY_BUFFER,
@@ -684,9 +693,9 @@ export default function CursorRingField(props: CursorRingFieldProps) {
 
         const uvBuf = gl.createBuffer()
         const refBuf = gl.createBuffer()
-        let refsTex: WebGLTexture | null = null
-        let rt1: { tex: WebGLTexture; fbo: WebGLFramebuffer; ok: boolean } | null = null
-        let rt2: { tex: WebGLTexture; fbo: WebGLFramebuffer; ok: boolean } | null = null
+        let refsTex: any = null
+        let rt1: any = null
+        let rt2: any = null
         let count = 0
         let texSize = 8
 
@@ -711,30 +720,22 @@ export default function CursorRingField(props: CursorRingFieldProps) {
             count = f.count
             texSize = f.texSize
 
-            if (uvBuf) {
-                gl.bindBuffer(gl.ARRAY_BUFFER, uvBuf)
-                gl.bufferData(gl.ARRAY_BUFFER, f.aUV, gl.STATIC_DRAW)
-            }
-            if (refBuf) {
-                gl.bindBuffer(gl.ARRAY_BUFFER, refBuf)
-                gl.bufferData(gl.ARRAY_BUFFER, f.aRef, gl.STATIC_DRAW)
-            }
+            gl.bindBuffer(gl.ARRAY_BUFFER, uvBuf)
+            gl.bufferData(gl.ARRAY_BUFFER, f.aUV, gl.STATIC_DRAW)
+            gl.bindBuffer(gl.ARRAY_BUFFER, refBuf)
+            gl.bufferData(gl.ARRAY_BUFFER, f.aRef, gl.STATIC_DRAW)
 
-            if (!useSim || !fmt) return
+            if (!useSim) return
 
             const src = { internal: fmt.internal, format: gl.RGBA, type: gl.FLOAT }
             refsTex = stateTexture(gl, src, texSize, f.refs)
             rt1 = renderTarget(gl, fmt, texSize)
             rt2 = renderTarget(gl, fmt, texSize)
 
-            if (rt1 && refsTex) {
-                gl.bindTexture(gl.TEXTURE_2D, rt1.tex)
-                gl.texImage2D(gl.TEXTURE_2D, 0, fmt.internal, texSize, texSize, 0, gl.RGBA, gl.FLOAT, f.refs)
-            }
-            if (rt2 && refsTex) {
-                gl.bindTexture(gl.TEXTURE_2D, rt2.tex)
-                gl.texImage2D(gl.TEXTURE_2D, 0, fmt.internal, texSize, texSize, 0, gl.RGBA, gl.FLOAT, f.refs)
-            }
+            gl.bindTexture(gl.TEXTURE_2D, rt1.tex)
+            gl.texImage2D(gl.TEXTURE_2D, 0, fmt.internal, texSize, texSize, 0, gl.RGBA, gl.FLOAT, f.refs)
+            gl.bindTexture(gl.TEXTURE_2D, rt2.tex)
+            gl.texImage2D(gl.TEXTURE_2D, 0, fmt.internal, texSize, texSize, 0, gl.RGBA, gl.FLOAT, f.refs)
             gl.bindTexture(gl.TEXTURE_2D, null)
         }
 
@@ -846,7 +847,7 @@ export default function CursorRingField(props: CursorRingFieldProps) {
                 Math.sin(simTime) * 0.03 +
                 Math.cos(simTime * 3) * 0.02
 
-            if (useSim && simProg && rt1 && rt2 && refsTex) {
+            if (useSim) {
                 const src = ping ? rt1 : rt2
                 const dst = ping ? rt2 : rt1
                 gl.bindFramebuffer(gl.FRAMEBUFFER, dst.fbo)
@@ -858,17 +859,17 @@ export default function CursorRingField(props: CursorRingFieldProps) {
                 gl.vertexAttribPointer(posLocSim, 2, gl.FLOAT, false, 0, 0)
                 gl.activeTexture(gl.TEXTURE0)
                 gl.bindTexture(gl.TEXTURE_2D, src.tex)
-                gl.uniform1i(simProg.u["uState"], 0)
+                gl.uniform1i(simProg.u.uState, 0)
                 gl.activeTexture(gl.TEXTURE1)
                 gl.bindTexture(gl.TEXTURE_2D, refsTex)
-                gl.uniform1i(simProg.u["uRefs"], 1)
-                gl.uniform2f(simProg.u["uRingPos"], ringPos.x, ringPos.y)
-                gl.uniform1f(simProg.u["uRingRadius"], radius)
-                gl.uniform1f(simProg.u["uRingWidth"], L.ringWidth)
-                gl.uniform1f(simProg.u["uRingWidth2"], L.ringEdge)
-                gl.uniform1f(simProg.u["uPush"], L.push)
-                gl.uniform1f(simProg.u["uTurb"], L.turb)
-                gl.uniform1f(simProg.u["uTime"], simTime)
+                gl.uniform1i(simProg.u.uRefs, 1)
+                gl.uniform2f(simProg.u.uRingPos, ringPos.x, ringPos.y)
+                gl.uniform1f(simProg.u.uRingRadius, radius)
+                gl.uniform1f(simProg.u.uRingWidth, L.ringWidth)
+                gl.uniform1f(simProg.u.uRingWidth2, L.ringEdge)
+                gl.uniform1f(simProg.u.uPush, L.push)
+                gl.uniform1f(simProg.u.uTurb, L.turb)
+                gl.uniform1f(simProg.u.uTime, simTime)
                 gl.drawArrays(gl.TRIANGLES, 0, 3)
                 gl.bindFramebuffer(gl.FRAMEBUFFER, null)
                 gl.enable(gl.BLEND)
@@ -880,41 +881,41 @@ export default function CursorRingField(props: CursorRingFieldProps) {
             gl.clear(gl.COLOR_BUFFER_BIT)
             gl.useProgram(renderProg.prog)
 
-            if (uvLoc >= 0 && uvBuf) {
+            if (uvLoc >= 0) {
                 gl.bindBuffer(gl.ARRAY_BUFFER, uvBuf)
                 gl.enableVertexAttribArray(uvLoc)
                 gl.vertexAttribPointer(uvLoc, 2, gl.FLOAT, false, 0, 0)
             }
-            if (refLoc >= 0 && refBuf) {
+            if (refLoc >= 0) {
                 gl.bindBuffer(gl.ARRAY_BUFFER, refBuf)
                 gl.enableVertexAttribArray(refLoc)
                 gl.vertexAttribPointer(refLoc, 2, gl.FLOAT, false, 0, 0)
             }
 
-            if (useSim && rt1 && rt2) {
+            if (useSim) {
                 const shown = ping ? rt1 : rt2
                 gl.activeTexture(gl.TEXTURE0)
                 gl.bindTexture(gl.TEXTURE_2D, shown.tex)
-                gl.uniform1i(renderProg.u["uState"], 0)
+                gl.uniform1i(renderProg.u.uState, 0)
             } else {
-                gl.uniform1f(renderProg.u["uRingRadius"], radius)
-                gl.uniform1f(renderProg.u["uRingWidth"], L.ringWidth)
-                gl.uniform1f(renderProg.u["uRingWidth2"], L.ringEdge)
-                gl.uniform1f(renderProg.u["uTurb"], L.turb)
+                gl.uniform1f(renderProg.u.uRingRadius, radius)
+                gl.uniform1f(renderProg.u.uRingWidth, L.ringWidth)
+                gl.uniform1f(renderProg.u.uRingWidth2, L.ringEdge)
+                gl.uniform1f(renderProg.u.uTurb, L.turb)
             }
 
-            gl.uniform1f(renderProg.u["uProjF"], projF)
-            gl.uniform1f(renderProg.u["uAspect"], aspect)
-            gl.uniform1f(renderProg.u["uCamDist"], L.camDist)
+            gl.uniform1f(renderProg.u.uProjF, projF)
+            gl.uniform1f(renderProg.u.uAspect, aspect)
+            gl.uniform1f(renderProg.u.uCamDist, L.camDist)
 
             gl.uniform1f(
-                renderProg.u["uPointScale"],
+                renderProg.u.uPointScale,
                 (cssW / 2000) * L.dotSize * dpr * 0.5
             )
             gl.uniform3fv(renderProg.u["uColors[0]"], L.colors)
-            gl.uniform1i(renderProg.u["uColorCount"], L.colorCount)
-            gl.uniform2f(renderProg.u["uRingPos"], ringPos.x, ringPos.y)
-            gl.uniform1f(renderProg.u["uTime"], simTime)
+            gl.uniform1i(renderProg.u.uColorCount, L.colorCount)
+            gl.uniform2f(renderProg.u.uRingPos, ringPos.x, ringPos.y)
+            gl.uniform1f(renderProg.u.uTime, simTime)
 
             gl.drawArrays(gl.POINTS, 0, count)
         }
@@ -926,12 +927,14 @@ export default function CursorRingField(props: CursorRingFieldProps) {
             window.removeEventListener("pointermove", onMove)
             canvas.removeEventListener("pointerleave", onLeave)
             disposeField()
-            if (quad) gl.deleteBuffer(quad)
-            if (uvBuf) gl.deleteBuffer(uvBuf)
-            if (refBuf) gl.deleteBuffer(refBuf)
+            gl.deleteBuffer(quad)
+            gl.deleteBuffer(uvBuf)
+            gl.deleteBuffer(refBuf)
             if (simProg) gl.deleteProgram(simProg.prog)
-            if (renderProg) gl.deleteProgram(renderProg.prog)
+            gl.deleteProgram(renderProg.prog)
+
         }
+
     }, [])
 
     return (
@@ -958,6 +961,32 @@ export default function CursorRingField(props: CursorRingFieldProps) {
                     display: "block",
                 }}
             />
+            {}
         </div>
     )
+}
+
+const __originkitPresetProps = {
+  "background": "#000000",
+  "colors": {
+    "items": [
+      "#A82121",
+      "#1724E0",
+      "#8A47E3",
+      "#E0DEDE"
+    ]
+  },
+  "dotSize": 150,
+  "speed": 20,
+  "cameraDistance": 430,
+  "ring": {
+    "push": 57,
+    "width": 11,
+    "radius": 20,
+    "turbulence": 180
+  }
+};
+
+export default function CursorRingField(props: Record<string, unknown>) {
+  return <__OriginkitBase_CursorRingField {...(__originkitPresetProps as Record<string, unknown>)} {...props} />;
 }

@@ -23,16 +23,6 @@ function HeroSection() {
         colors={{
           items: ["#8b5cf6", "#6366f1", "#3b82f6", "#06b6d4"],
         }}
-        density={250}
-        dotSize={140}
-        speed={8}
-        cameraDistance={180}
-        ring={{
-          push: 60,
-          width: 10,
-          radius: 14,
-          turbulence: 120,
-        }}
         style={{ position: "absolute", inset: 0 }}
       />
 
