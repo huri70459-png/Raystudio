@@ -8,8 +8,9 @@ import SandboxSection from './components/SandboxSection';
 import SandboxModal from './components/SandboxModal';
 import Footer from './components/Footer';
 import CursorRingField from './components/CursorRingField';
+import NotepadApp from './apps/notepad/NotepadApp';
 
-function HeroSection() {
+function HeroSection({ onLaunchApp }: { onLaunchApp: () => void }) {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background layers */}
@@ -74,19 +75,19 @@ function HeroSection() {
           transition={{ duration: 0.8, delay: 0.6 }}
           className="flex flex-col sm:flex-row items-center justify-center gap-4 pointer-events-auto"
         >
-          <a
-            href="#ecosystem"
+          <button
+            onClick={onLaunchApp}
             className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-purple-600 hover:bg-purple-500 text-white font-semibold text-sm transition-all shadow-lg shadow-purple-600/25 flex items-center justify-center gap-2 group"
           >
             <Zap className="w-4 h-4" />
-            Explore Ecosystem
-          </a>
+            Launch Smart Notepad
+          </button>
           <a
-            href="#sandbox"
+            href="#ecosystem"
             className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-800 text-zinc-200 font-semibold text-sm backdrop-blur-md transition-all flex items-center justify-center gap-2"
           >
             <Code2 className="w-4 h-4" />
-            Try Live Demos
+            Explore Ecosystem
           </a>
         </motion.div>
 
@@ -181,12 +182,32 @@ function TechStackSection() {
 
 export default function App() {
   const [isSandboxOpen, setIsSandboxOpen] = useState(false);
+  const [currentApp, setCurrentApp] = useState<'landing' | 'notepad'>('landing');
+
+  // Check URL hash for direct app navigation
+  useState(() => {
+    if (typeof window !== 'undefined' && window.location.hash === '#notepad') {
+      setCurrentApp('notepad');
+    }
+  });
+
+  // If we're in the notepad app, render it instead of the landing page
+  if (currentApp === 'notepad') {
+    return <NotepadApp onBack={() => {
+      setCurrentApp('landing');
+      window.location.hash = '';
+    }} />;
+  }
 
   return (
     <div className="relative min-h-screen bg-zinc-950 text-zinc-100">
       <Navbar />
-      <HeroSection />
-      <BentoGrid />
+      <HeroSection onLaunchApp={() => setCurrentApp('notepad')} />
+      <BentoGrid onOpenApp={(appId) => {
+        if (appId === 'notepad-editor') {
+          setCurrentApp('notepad');
+        }
+      }} />
       <TechStackSection />
       <CinematicScroll />
       <SandboxSection onOpenSandbox={() => setIsSandboxOpen(true)} />

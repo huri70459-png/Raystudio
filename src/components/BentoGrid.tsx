@@ -8,7 +8,11 @@ const statusColors: Record<string, string> = {
   'coming-soon': 'bg-white/10 text-white/60 border-white/20',
 };
 
-function AppCard({ app, index }: { app: EcosystemApp; index: number }) {
+interface BentoGridProps {
+  onOpenApp?: (appId: string) => void;
+}
+
+function AppCard({ app, index, onOpenApp }: { app: EcosystemApp; index: number; onOpenApp?: (appId: string) => void }) {
   const { Icon } = app;
 
   return (
@@ -41,13 +45,16 @@ function AppCard({ app, index }: { app: EcosystemApp; index: number }) {
           <span className={`text-xs px-2.5 py-1 rounded-full border ${statusColors[app.status]}`}>
             {app.status === 'coming-soon' ? 'Soon' : app.status === 'live' ? 'Live' : 'Beta'}
           </span>
-          <a
-            href={app.href}
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              onOpenApp?.(app.id);
+            }}
             className="p-2 rounded-full bg-zinc-800/40 border border-zinc-700/40 text-zinc-400 hover:text-white hover:bg-zinc-700/60 transition-all opacity-0 group-hover:opacity-100"
             aria-label={`Open ${app.title}`}
           >
             <ArrowUpRight className="w-4 h-4" />
-          </a>
+          </button>
         </div>
       </div>
 
@@ -80,7 +87,7 @@ function AppCard({ app, index }: { app: EcosystemApp; index: number }) {
   );
 }
 
-export default function BentoGrid() {
+export default function BentoGrid({ onOpenApp }: BentoGridProps) {
   return (
     <section id="ecosystem" className="relative w-full py-24 px-4 md:px-8 overflow-hidden">
       {/* Background glow */}
@@ -123,7 +130,7 @@ export default function BentoGrid() {
         {/* Bento Grid Container */}
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-5 auto-rows-[minmax(220px,_auto)]">
           {ECOSYSTEM_APPS.map((app, index) => (
-            <AppCard key={app.id} app={app} index={index} />
+            <AppCard key={app.id} app={app} index={index} onOpenApp={onOpenApp} />
           ))}
         </div>
       </div>
