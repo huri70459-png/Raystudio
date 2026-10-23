@@ -9,6 +9,7 @@ import SandboxModal from './components/SandboxModal';
 import Footer from './components/Footer';
 import CursorRingField from './components/CursorRingField';
 import NotepadApp from './apps/notepad/NotepadApp';
+import RayEvalsApp from './apps/ray-evals/RayEvalsApp';
 
 function HeroSection({ onLaunchApp }: { onLaunchApp: () => void }) {
   return (
@@ -182,18 +183,29 @@ function TechStackSection() {
 
 export default function App() {
   const [isSandboxOpen, setIsSandboxOpen] = useState(false);
-  const [currentApp, setCurrentApp] = useState<'landing' | 'notepad'>('landing');
+  const [currentApp, setCurrentApp] = useState<'landing' | 'notepad' | 'ray-evals'>('landing');
 
   // Check URL hash for direct app navigation
   useState(() => {
-    if (typeof window !== 'undefined' && window.location.hash === '#notepad') {
-      setCurrentApp('notepad');
+    if (typeof window !== 'undefined') {
+      if (window.location.hash === '#notepad') {
+        setCurrentApp('notepad');
+      } else if (window.location.hash === '#ray-evals') {
+        setCurrentApp('ray-evals');
+      }
     }
   });
 
-  // If we're in the notepad app, render it instead of the landing page
+  // If we're in an app, render it instead of the landing page
   if (currentApp === 'notepad') {
     return <NotepadApp onBack={() => {
+      setCurrentApp('landing');
+      window.location.hash = '';
+    }} />;
+  }
+
+  if (currentApp === 'ray-evals') {
+    return <RayEvalsApp onBack={() => {
       setCurrentApp('landing');
       window.location.hash = '';
     }} />;
@@ -206,6 +218,8 @@ export default function App() {
       <BentoGrid onOpenApp={(appId) => {
         if (appId === 'notepad-editor') {
           setCurrentApp('notepad');
+        } else if (appId === 'prompt-eval') {
+          setCurrentApp('ray-evals');
         }
       }} />
       <TechStackSection />
