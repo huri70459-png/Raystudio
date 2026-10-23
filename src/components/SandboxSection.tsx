@@ -67,13 +67,13 @@ export default function SandboxSection({ onOpenSandbox }: SandboxSectionProps) {
               <div className="relative inline-block">
                 <PulsatingBorder
                   colors={["#8b5cf6", "#ec4899", "#3b82f6"]}
-                  thickness={2}
+                  thickness={1.5}
                   radius={50}
-                  softness={60}
-                  intensity={28}
-                  bloom={35}
-                  spread={18}
-                  speed={1.5}
+                  softness={50}
+                  intensity={20}
+                  bloom={25}
+                  spread={14}
+                  speed={1}
                   style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}
                 />
                 <button

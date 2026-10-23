@@ -68,13 +68,13 @@ export default function RayEvalsApp({ onBack }: RayEvalsAppProps) {
           <div className="relative">
             <PulsatingBorder
               colors={["#8b5cf6", "#ec4899", "#6366f1"]}
-              thickness={2}
+              thickness={1.5}
               radius={30}
-              softness={60}
-              intensity={28}
-              bloom={32}
-              spread={16}
-              speed={1.3}
+              softness={50}
+              intensity={18}
+              bloom={22}
+              spread={12}
+              speed={1}
               style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}
             />
             <button
@@ -135,13 +135,13 @@ export default function RayEvalsApp({ onBack }: RayEvalsAppProps) {
                   <div className="flex-1 relative">
                     <PulsatingBorder
                       colors={["#8b5cf6", "#ec4899", "#3b82f6"]}
-                      thickness={1.5}
+                      thickness={1.2}
                       radius={40}
-                      softness={65}
-                      intensity={22}
-                      bloom={28}
-                      spread={14}
-                      speed={1.4}
+                      softness={50}
+                      intensity={16}
+                      bloom={20}
+                      spread={12}
+                      speed={1}
                       style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}
                     />
                     <button

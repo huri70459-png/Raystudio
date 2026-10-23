@@ -1,7 +1,6 @@
 import { motion } from 'framer-motion';
 import { ECOSYSTEM_APPS, type EcosystemApp } from '../data/apps';
 import { ArrowUpRight, Zap } from 'lucide-react';
-import PulsatingBorder from './PulsatingBorder';
 
 const statusColors: Record<string, string> = {
   live: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
@@ -25,21 +24,7 @@ function AppCard({ app, index, onOpenApp }: { app: EcosystemApp; index: number; 
       whileHover={{ scale: 1.01, y: -4 }}
       className={`group relative rounded-3xl p-6 md:p-8 flex flex-col justify-between overflow-hidden border border-zinc-800/80 bg-zinc-900/40 backdrop-blur-xl transition-colors hover:border-zinc-700 ${app.colSpan} ${app.rowSpan || ''}`}
     >
-      {/* Pulsating Border - Only visible on hover */}
-      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-0">
-        <PulsatingBorder
-          colors={[app.accentGlow, app.accentGlow, app.accentGlow]}
-          thickness={1.5}
-          radius={50}
-          softness={70}
-          intensity={25}
-          bloom={30}
-          spread={12}
-          speed={1.2}
-        />
-      </div>
-      
-      {/* Dynamic Gradient Glow on Hover */}
+      {/* Dynamic Gradient Glow on Hover - CSS only for performance */}
       <div className={`absolute inset-0 bg-gradient-to-br ${app.accentColor} opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none`} />
 
       {/* Top row: Icon & Badge */}

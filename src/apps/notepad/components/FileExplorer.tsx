@@ -160,13 +160,13 @@ export default function FileExplorer({ onBack, onOpenConverter }: FileExplorerPr
         <div className="relative">
           <PulsatingBorder
             colors={["#8b5cf6", "#6366f1", "#3b82f6"]}
-            thickness={1.5}
+            thickness={1.2}
             radius={30}
-            softness={70}
-            intensity={20}
-            bloom={25}
-            spread={10}
-            speed={1.1}
+            softness={50}
+            intensity={15}
+            bloom={18}
+            spread={8}
+            speed={1}
             style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}
           />
           <button

@@ -16,6 +16,7 @@ interface PulsatingBorderProps {
   spotSize?: number;
   spread?: number;
   style?: React.CSSProperties;
+  disabled?: boolean;
 }
 
 const DEFAULT_COLORS = ["#F2244F", "#4DA6E6", "#379590"];
@@ -52,6 +53,7 @@ function __OriginkitBase_PulsatingBorder(props: PulsatingBorderProps) {
     spotSize = DEFAULTS.spotSize,
     spread = DEFAULTS.spread,
     style,
+    disabled = false,
   } = props;
 
   const colors =
@@ -60,6 +62,7 @@ function __OriginkitBase_PulsatingBorder(props: PulsatingBorderProps) {
       : DEFAULT_COLORS;
 
   const hostRef = React.useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = React.useState(false);
 
   const [rect, setRect] = React.useState({ left: 0, top: 0, w: 0, h: 0 });
   const [portalTarget, setPortalTarget] = React.useState<HTMLElement | null>(
@@ -70,10 +73,31 @@ function __OriginkitBase_PulsatingBorder(props: PulsatingBorderProps) {
     setPortalTarget(document.body);
   }, []);
 
+  // Intersection Observer - only render when visible
   React.useEffect(() => {
     const host = hostRef.current;
-    if (!host) return;
+    if (!host || disabled) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsVisible(entry.isIntersecting);
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(host);
+    return () => observer.disconnect();
+  }, [disabled]);
+
+  // Throttled resize/scroll handler
+  React.useEffect(() => {
+    const host = hostRef.current;
+    if (!host || disabled || !isVisible) return;
+    
     let raf = 0;
+    let lastUpdate = 0;
+    const THROTTLE_MS = 100; // Only update every 100ms
+    
     const read = () => {
       raf = 0;
       const r = host.getBoundingClientRect();
@@ -90,8 +114,13 @@ function __OriginkitBase_PulsatingBorder(props: PulsatingBorderProps) {
     };
 
     const schedule = () => {
+      const now = Date.now();
+      if (now - lastUpdate < THROTTLE_MS) return;
+      lastUpdate = now;
+      
       if (!raf) raf = requestAnimationFrame(read);
     };
+    
     read();
     const ro = new ResizeObserver(schedule);
     ro.observe(host);
@@ -104,7 +133,7 @@ function __OriginkitBase_PulsatingBorder(props: PulsatingBorderProps) {
       window.removeEventListener("scroll", schedule, true);
       window.removeEventListener("resize", schedule);
     };
-  }, []);
+  }, [disabled, isVisible]);
 
   const worldW = rect.w + spread * 2;
   const worldH = rect.h + spread * 2;
@@ -119,6 +148,23 @@ function __OriginkitBase_PulsatingBorder(props: PulsatingBorderProps) {
   const canvasW = rect.w + bleed * 2;
   const canvasH = rect.h + bleed * 2;
   const measured = rect.w > 0 && rect.h > 0;
+
+  // Don't render if disabled or not visible
+  if (disabled || !isVisible) {
+    return (
+      <div
+        ref={hostRef}
+        style={{
+          position: "relative",
+          width: "100%",
+          height: "100%",
+          flexShrink: 0,
+          overflow: "visible",
+          ...style,
+        }}
+      />
+    );
+  }
 
   const escapes = portalTarget !== null;
 

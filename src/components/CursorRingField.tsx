@@ -987,6 +987,33 @@ const __originkitPresetProps = {
   }
 };
 
+// Performance-optimized wrapper with visibility detection
 export default function CursorRingField(props: Record<string, unknown>) {
-  return <__OriginkitBase_CursorRingField {...(__originkitPresetProps as Record<string, unknown>)} {...props} />;
+  const [isVisible, setIsVisible] = React.useState(true);
+  const containerRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsVisible(entry.isIntersecting),
+      { threshold: 0.1 }
+    );
+    if (containerRef.current) observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  // Don't render heavy WebGL when not visible
+  if (!isVisible) {
+    return <div ref={containerRef} style={{ position: 'absolute', inset: 0 }} />;
+  }
+
+  return (
+    <div ref={containerRef} style={{ position: 'absolute', inset: 0 }}>
+      <__OriginkitBase_CursorRingField 
+        {...(__originkitPresetProps as Record<string, unknown>)} 
+        {...props}
+        density={150}  // Reduced from 300 for better performance
+        speed={15}     // Reduced from 20
+      />
+    </div>
+  );
 }

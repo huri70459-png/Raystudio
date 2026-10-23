@@ -80,13 +80,13 @@ function HeroSection({ onLaunchApp }: { onLaunchApp: () => void }) {
           <div className="relative w-full sm:w-auto">
             <PulsatingBorder
               colors={["#8b5cf6", "#6366f1", "#3b82f6"]}
-              thickness={2}
+              thickness={1.5}
               radius={50}
-              softness={60}
-              intensity={30}
-              bloom={35}
-              spread={20}
-              speed={1.5}
+              softness={50}
+              intensity={20}
+              bloom={25}
+              spread={16}
+              speed={1}
               style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}
             />
             <button
