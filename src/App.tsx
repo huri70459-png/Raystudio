@@ -6,6 +6,7 @@ import BentoGrid from './components/BentoGrid';
 import CinematicScroll from './components/CinematicScroll';
 import SandboxSection from './components/SandboxSection';
 import SandboxModal from './components/SandboxModal';
+import AuthModal from './components/AuthModal';
 import Footer from './components/Footer';
 import CursorRingField from './components/CursorRingField';
 import PulsatingBorder from './components/PulsatingBorder';
@@ -13,6 +14,7 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import Loading from './components/Loading';
 import { initPersistence } from './services/persistenceService';
 import { validateConfig } from './config/api';
+import { getAuthState } from './services/authService';
 
 // Lazy load heavy apps for code splitting
 const NotepadApp = lazy(() => import('./apps/notepad/NotepadApp'));
@@ -203,8 +205,10 @@ function TechStackSection() {
 
 export default function App() {
   const [isSandboxOpen, setIsSandboxOpen] = useState(false);
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [currentApp, setCurrentApp] = useState<'landing' | 'notepad' | 'ray-evals'>('landing');
   const [configError, setConfigError] = useState<string | null>(null);
+  const [, setAuthState] = useState(getAuthState());
 
   // Initialize services and validate config
   useEffect(() => {
@@ -273,7 +277,10 @@ export default function App() {
           </div>
         )}
         
-        <Navbar />
+        <Navbar 
+          onOpenAuth={() => setIsAuthOpen(true)}
+          onAuthChange={() => setAuthState(getAuthState())}
+        />
         <HeroSection onLaunchApp={() => setCurrentApp('notepad')} />
         <BentoGrid onOpenApp={(appId) => {
           if (appId === 'notepad-editor') {
@@ -291,6 +298,13 @@ export default function App() {
         <SandboxModal
           isOpen={isSandboxOpen}
           onClose={() => setIsSandboxOpen(false)}
+        />
+        
+        {/* Auth Modal */}
+        <AuthModal
+          isOpen={isAuthOpen}
+          onClose={() => setIsAuthOpen(false)}
+          onAuth={() => setAuthState(getAuthState())}
         />
       </div>
     </ErrorBoundary>

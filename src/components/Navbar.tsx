@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Sparkles } from 'lucide-react';
+import { Menu, X, Sparkles, LogOut } from 'lucide-react';
+import { getAuthState, signOut } from '../services/authService';
 
 const navLinks = [
   { label: 'Ecosystem', href: '#ecosystem' },
@@ -9,15 +10,32 @@ const navLinks = [
   { label: 'About', href: '#about' },
 ];
 
-export default function Navbar() {
+interface NavbarProps {
+  onOpenAuth: () => void;
+  onAuthChange: () => void;
+}
+
+export default function Navbar({ onOpenAuth, onAuthChange }: NavbarProps) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [user, setUser] = useState(getAuthState().user);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Refresh user state when auth changes
+  useEffect(() => {
+    setUser(getAuthState().user);
+  }, [onAuthChange]);
+
+  const handleSignOut = () => {
+    signOut();
+    setUser(null);
+    onAuthChange();
+  };
 
   return (
     <>
@@ -58,18 +76,35 @@ export default function Navbar() {
 
           {/* CTA */}
           <div className="hidden md:flex items-center gap-4">
-            <a
-              href="#ecosystem"
-              className="px-4 py-2 text-sm font-medium text-zinc-300 hover:text-white transition-colors"
-            >
-              Sign In
-            </a>
-            <a
-              href="#sandbox"
-              className="px-5 py-2.5 text-sm font-medium rounded-xl bg-purple-600/80 hover:bg-purple-500/80 text-white transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/20"
-            >
-              Get Early Access
-            </a>
+            {user ? (
+              <>
+                <span className="text-sm text-zinc-300">
+                  {user.email}
+                </span>
+                <button
+                  onClick={handleSignOut}
+                  className="p-2 rounded-lg hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors"
+                  title="Sign out"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={onOpenAuth}
+                  className="px-4 py-2 text-sm font-medium text-zinc-300 hover:text-white transition-colors"
+                >
+                  Sign In
+                </button>
+                <a
+                  href="#sandbox"
+                  className="px-5 py-2.5 text-sm font-medium rounded-xl bg-purple-600/80 hover:bg-purple-500/80 text-white transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/20"
+                >
+                  Get Early Access
+                </a>
+              </>
+            )}
           </div>
 
           {/* Mobile Toggle */}

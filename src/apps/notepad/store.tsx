@@ -1,5 +1,6 @@
 import { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 import { NotepadFile } from './types';
+import { saveFilesLocally, loadFilesLocally, scheduleSync } from '../../services/persistenceService';
 
 interface NotepadState {
   files: NotepadFile[];
@@ -132,9 +133,22 @@ const response = await fetch('/api/data', {
 
 function loadState(): NotepadState {
   try {
+    // Use persistence service
+    const files = loadFilesLocally();
+    if (files.length > 0) {
+      return {
+        files,
+        activeFileId: files[0].id,
+        recentFiles: [files[0].id],
+      };
+    }
+    // Fallback to localStorage for backward compatibility
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
-      return JSON.parse(stored);
+      const parsed = JSON.parse(stored);
+      // Migrate to persistence service
+      saveFilesLocally(parsed.files || []);
+      return parsed;
     }
   } catch (e) {
     console.error('Failed to load state:', e);
@@ -148,6 +162,11 @@ function loadState(): NotepadState {
 
 function saveState(state: NotepadState) {
   try {
+    // Use persistence service (handles localStorage + cloud sync)
+    saveFilesLocally(state.files);
+    // Schedule cloud sync if enabled
+    scheduleSync(state.files);
+    // Keep localStorage in sync for backward compatibility
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   } catch (e) {
     console.error('Failed to save state:', e);
