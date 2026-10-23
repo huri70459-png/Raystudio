@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowDown, Sparkles, Code2, Zap } from 'lucide-react';
 import Navbar from './components/Navbar';
@@ -9,8 +9,14 @@ import SandboxModal from './components/SandboxModal';
 import Footer from './components/Footer';
 import CursorRingField from './components/CursorRingField';
 import PulsatingBorder from './components/PulsatingBorder';
-import NotepadApp from './apps/notepad/NotepadApp';
-import RayEvalsApp from './apps/ray-evals/RayEvalsApp';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import Loading from './components/Loading';
+import { initPersistence } from './services/persistenceService';
+import { validateConfig } from './config/api';
+
+// Lazy load heavy apps for code splitting
+const NotepadApp = lazy(() => import('./apps/notepad/NotepadApp'));
+const RayEvalsApp = lazy(() => import('./apps/ray-evals/RayEvalsApp'));
 
 function HeroSection({ onLaunchApp }: { onLaunchApp: () => void }) {
   return (
@@ -198,9 +204,23 @@ function TechStackSection() {
 export default function App() {
   const [isSandboxOpen, setIsSandboxOpen] = useState(false);
   const [currentApp, setCurrentApp] = useState<'landing' | 'notepad' | 'ray-evals'>('landing');
+  const [configError, setConfigError] = useState<string | null>(null);
 
-  // Check URL hash for direct app navigation
-  useState(() => {
+  // Initialize services and validate config
+  useEffect(() => {
+    // Initialize persistence service
+    initPersistence({
+      enableCloudSync: false, // Enable when backend is ready
+    });
+
+    // Validate configuration
+    const validation = validateConfig();
+    if (!validation.valid) {
+      setConfigError(validation.errors[0]);
+      console.warn('Configuration warnings:', validation.errors);
+    }
+
+    // Check URL hash for direct app navigation
     if (typeof window !== 'undefined') {
       if (window.location.hash === '#notepad') {
         setCurrentApp('notepad');
@@ -208,44 +228,71 @@ export default function App() {
         setCurrentApp('ray-evals');
       }
     }
-  });
+  }, []);
 
-  // If we're in an app, render it instead of the landing page
+  // Error handler for error boundary
+  const handleError = (error: Error, errorInfo: any) => {
+    console.error('App error:', error, errorInfo);
+    // In production, send to error tracking service
+  };
+
+  // If we're in an app, render it with lazy loading and error boundary
   if (currentApp === 'notepad') {
-    return <NotepadApp onBack={() => {
-      setCurrentApp('landing');
-      window.location.hash = '';
-    }} />;
+    return (
+      <ErrorBoundary onError={handleError}>
+        <Suspense fallback={<Loading fullScreen text="Loading Smart Notepad..." />}>
+          <NotepadApp onBack={() => {
+            setCurrentApp('landing');
+            window.location.hash = '';
+          }} />
+        </Suspense>
+      </ErrorBoundary>
+    );
   }
 
   if (currentApp === 'ray-evals') {
-    return <RayEvalsApp onBack={() => {
-      setCurrentApp('landing');
-      window.location.hash = '';
-    }} />;
+    return (
+      <ErrorBoundary onError={handleError}>
+        <Suspense fallback={<Loading fullScreen text="Loading RAY-Evals..." />}>
+          <RayEvalsApp onBack={() => {
+            setCurrentApp('landing');
+            window.location.hash = '';
+          }} />
+        </Suspense>
+      </ErrorBoundary>
+    );
   }
 
   return (
-    <div className="relative min-h-screen bg-zinc-950 text-zinc-100">
-      <Navbar />
-      <HeroSection onLaunchApp={() => setCurrentApp('notepad')} />
-      <BentoGrid onOpenApp={(appId) => {
-        if (appId === 'notepad-editor') {
-          setCurrentApp('notepad');
-        } else if (appId === 'prompt-eval') {
-          setCurrentApp('ray-evals');
-        }
-      }} />
-      <TechStackSection />
-      <CinematicScroll />
-      <SandboxSection onOpenSandbox={() => setIsSandboxOpen(true)} />
-      <Footer />
-      
-      {/* Sandbox Modal */}
-      <SandboxModal
-        isOpen={isSandboxOpen}
-        onClose={() => setIsSandboxOpen(false)}
-      />
-    </div>
+    <ErrorBoundary onError={handleError}>
+      <div className="relative min-h-screen bg-zinc-950 text-zinc-100">
+        {/* Config warning banner */}
+        {configError && (
+          <div className="fixed top-0 left-0 right-0 z-50 bg-amber-500/10 border-b border-amber-500/30 px-4 py-2 text-center text-xs text-amber-300">
+            ⚠️ {configError}. Some features may use mock data.
+          </div>
+        )}
+        
+        <Navbar />
+        <HeroSection onLaunchApp={() => setCurrentApp('notepad')} />
+        <BentoGrid onOpenApp={(appId) => {
+          if (appId === 'notepad-editor') {
+            setCurrentApp('notepad');
+          } else if (appId === 'prompt-eval') {
+            setCurrentApp('ray-evals');
+          }
+        }} />
+        <TechStackSection />
+        <CinematicScroll />
+        <SandboxSection onOpenSandbox={() => setIsSandboxOpen(true)} />
+        <Footer />
+        
+        {/* Sandbox Modal */}
+        <SandboxModal
+          isOpen={isSandboxOpen}
+          onClose={() => setIsSandboxOpen(false)}
+        />
+      </div>
+    </ErrorBoundary>
   );
 }
