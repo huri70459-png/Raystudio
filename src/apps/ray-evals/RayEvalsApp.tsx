@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Zap, Brain, Shield, Code, FileText, ArrowRight, CheckCircle2, Loader2 } from 'lucide-react';
 import { compilePrompt } from './engine';
 import { CompilationResult } from './types';
+import PulsatingBorder from '../../components/PulsatingBorder';
 
 interface RayEvalsAppProps {
   onBack: () => void;
@@ -64,13 +65,26 @@ export default function RayEvalsApp({ onBack }: RayEvalsAppProps) {
               <h1 className="text-lg font-semibold">RAY-Evals Tools</h1>
             </div>
           </div>
-          <button
-            onClick={() => setIsPaletteOpen(true)}
-            className="px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 text-white text-sm font-medium transition-all flex items-center gap-2"
-          >
-            <span>Open Command Palette</span>
-            <kbd className="px-2 py-0.5 rounded bg-zinc-800 text-xs font-mono">⌘K</kbd>
-          </button>
+          <div className="relative">
+            <PulsatingBorder
+              colors={["#8b5cf6", "#ec4899", "#6366f1"]}
+              thickness={2}
+              radius={30}
+              softness={60}
+              intensity={28}
+              bloom={32}
+              spread={16}
+              speed={1.3}
+              style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}
+            />
+            <button
+              onClick={() => setIsPaletteOpen(true)}
+              className="relative px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 text-white text-sm font-medium transition-all flex items-center gap-2 z-10"
+            >
+              <span>Open Command Palette</span>
+              <kbd className="px-2 py-0.5 rounded bg-zinc-800 text-xs font-mono">⌘K</kbd>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -118,23 +132,36 @@ export default function RayEvalsApp({ onBack }: RayEvalsAppProps) {
                 />
                 
                 <div className="flex gap-3">
-                  <button
-                    onClick={handleCompile}
-                    disabled={!inputValue.trim() || isCompiling}
-                    className="flex-1 px-6 py-3 rounded-xl bg-purple-600 hover:bg-purple-500 disabled:bg-zinc-800 disabled:text-zinc-600 text-white font-medium transition-all flex items-center justify-center gap-2"
-                  >
-                    {isCompiling ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        Compiling...
-                      </>
-                    ) : (
-                      <>
-                        <Zap className="w-4 h-4" />
-                        Compile & Optimize
-                      </>
-                    )}
-                  </button>
+                  <div className="flex-1 relative">
+                    <PulsatingBorder
+                      colors={["#8b5cf6", "#ec4899", "#3b82f6"]}
+                      thickness={1.5}
+                      radius={40}
+                      softness={65}
+                      intensity={22}
+                      bloom={28}
+                      spread={14}
+                      speed={1.4}
+                      style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}
+                    />
+                    <button
+                      onClick={handleCompile}
+                      disabled={!inputValue.trim() || isCompiling}
+                      className="relative w-full px-6 py-3 rounded-xl bg-purple-600 hover:bg-purple-500 disabled:bg-zinc-800 disabled:text-zinc-600 text-white font-medium transition-all flex items-center justify-center gap-2 z-10"
+                    >
+                      {isCompiling ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Compiling...
+                        </>
+                      ) : (
+                        <>
+                          <Zap className="w-4 h-4" />
+                          Compile & Optimize
+                        </>
+                      )}
+                    </button>
+                  </div>
                   <button
                     onClick={() => setIsPaletteOpen(true)}
                     className="px-6 py-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-medium transition-all"

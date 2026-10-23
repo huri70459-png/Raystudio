@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useNotepad } from '../store';
 import { getFileType } from '../utils/converter';
+import PulsatingBorder from '../../../components/PulsatingBorder';
 
 interface FileExplorerProps {
   onBack: () => void;
@@ -156,13 +157,26 @@ export default function FileExplorer({ onBack, onOpenConverter }: FileExplorerPr
             Converters
           </span>
         </div>
-        <button
-          onClick={onOpenConverter}
-          className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-xs text-zinc-400 hover:bg-zinc-900 hover:text-white transition-all border border-transparent hover:border-zinc-800"
-        >
-          <span className="text-base">📄</span>
-          <span>Universal Converter</span>
-        </button>
+        <div className="relative">
+          <PulsatingBorder
+            colors={["#8b5cf6", "#6366f1", "#3b82f6"]}
+            thickness={1.5}
+            radius={30}
+            softness={70}
+            intensity={20}
+            bloom={25}
+            spread={10}
+            speed={1.1}
+            style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}
+          />
+          <button
+            onClick={onOpenConverter}
+            className="relative w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-xs text-zinc-400 hover:bg-zinc-900 hover:text-white transition-all border border-transparent hover:border-zinc-800 z-10"
+          >
+            <span className="text-base">📄</span>
+            <span>Universal Converter</span>
+          </button>
+        </div>
         <button
           onClick={onOpenConverter}
           className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-xs text-zinc-400 hover:bg-zinc-900 hover:text-white transition-all border border-transparent hover:border-zinc-800"

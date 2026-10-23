@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { Terminal, Cpu } from 'lucide-react';
+import PulsatingBorder from './PulsatingBorder';
 
 interface SandboxSectionProps {
   onOpenSandbox: () => void;
@@ -63,13 +64,26 @@ export default function SandboxSection({ onOpenSandbox }: SandboxSectionProps) {
               <p className="text-zinc-400 text-sm mb-8 max-w-md mx-auto">
                 Test all 5 AI tools in a unified interactive environment. Query memory, trigger ghost-text, benchmark prompts, and more.
               </p>
-              <button
-                onClick={onOpenSandbox}
-                className="px-8 py-4 rounded-2xl bg-purple-600 hover:bg-purple-500 text-white font-semibold text-sm transition-all shadow-lg shadow-purple-600/25 flex items-center gap-2 mx-auto"
-              >
-                <Terminal className="w-4 h-4" />
-                Open Sandbox
-              </button>
+              <div className="relative inline-block">
+                <PulsatingBorder
+                  colors={["#8b5cf6", "#ec4899", "#3b82f6"]}
+                  thickness={2}
+                  radius={50}
+                  softness={60}
+                  intensity={28}
+                  bloom={35}
+                  spread={18}
+                  speed={1.5}
+                  style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}
+                />
+                <button
+                  onClick={onOpenSandbox}
+                  className="relative px-8 py-4 rounded-2xl bg-purple-600 hover:bg-purple-500 text-white font-semibold text-sm transition-all shadow-lg shadow-purple-600/25 flex items-center gap-2 z-10"
+                >
+                  <Terminal className="w-4 h-4" />
+                  Open Sandbox
+                </button>
+              </div>
 
               {/* Feature pills */}
               <div className="flex flex-wrap items-center justify-center gap-3 mt-8">

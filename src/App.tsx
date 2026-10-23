@@ -8,6 +8,7 @@ import SandboxSection from './components/SandboxSection';
 import SandboxModal from './components/SandboxModal';
 import Footer from './components/Footer';
 import CursorRingField from './components/CursorRingField';
+import PulsatingBorder from './components/PulsatingBorder';
 import NotepadApp from './apps/notepad/NotepadApp';
 import RayEvalsApp from './apps/ray-evals/RayEvalsApp';
 
@@ -76,13 +77,26 @@ function HeroSection({ onLaunchApp }: { onLaunchApp: () => void }) {
           transition={{ duration: 0.8, delay: 0.6 }}
           className="flex flex-col sm:flex-row items-center justify-center gap-4 pointer-events-auto"
         >
-          <button
-            onClick={onLaunchApp}
-            className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-purple-600 hover:bg-purple-500 text-white font-semibold text-sm transition-all shadow-lg shadow-purple-600/25 flex items-center justify-center gap-2 group"
-          >
-            <Zap className="w-4 h-4" />
-            Launch Smart Notepad
-          </button>
+          <div className="relative w-full sm:w-auto">
+            <PulsatingBorder
+              colors={["#8b5cf6", "#6366f1", "#3b82f6"]}
+              thickness={2}
+              radius={50}
+              softness={60}
+              intensity={30}
+              bloom={35}
+              spread={20}
+              speed={1.5}
+              style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}
+            />
+            <button
+              onClick={onLaunchApp}
+              className="relative w-full sm:w-auto px-8 py-4 rounded-2xl bg-purple-600 hover:bg-purple-500 text-white font-semibold text-sm transition-all shadow-lg shadow-purple-600/25 flex items-center justify-center gap-2 group z-10"
+            >
+              <Zap className="w-4 h-4" />
+              Launch Smart Notepad
+            </button>
+          </div>
           <a
             href="#ecosystem"
             className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-800 text-zinc-200 font-semibold text-sm backdrop-blur-md transition-all flex items-center justify-center gap-2"
